@@ -72,7 +72,7 @@ impl<'a> ActorHandler<'a> for CarHandler<'a> {
 pub struct TimeSeriesCarData {
     pub throttle: Option<u8>,
     pub steer: Option<u8>,
-    pub handbrake: Option<u8>,
+    pub handbrake: Option<bool>,
     pub is_sleeping: Option<bool>,
     pub pos_x: Option<f32>,
     pub pos_y: Option<f32>,
@@ -107,7 +107,7 @@ impl TimeSeriesCarData {
         if let Some(Attribute::Byte(_steer)) = attributes.get("TAGame.Vehicle_TA:ReplicatedSteer") {
             steer = Some(*_steer);
         }
-        if let Some(Attribute::Byte(_handbrake)) =
+        if let Some(Attribute::Boolean(_handbrake)) =
             attributes.get("TAGame.Vehicle_TA:bReplicatedHandbrake")
         {
             handbrake = Some(*_handbrake);

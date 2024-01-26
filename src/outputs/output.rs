@@ -7,6 +7,7 @@ use crate::frame_parser::{FrameParser, TimeSeriesReplayData};
 use crate::outputs::{Demo, Game, Player, Team};
 use boxcars::{Attribute, Replay};
 use log::error;
+use polars::datatypes::BooleanChunked;
 use polars::error::PolarsError;
 use polars::prelude::{
     DataFrame, Float32Chunked, Int32Chunked, IntoSeries, NewChunkedArray, UInt8Chunked,
@@ -185,7 +186,7 @@ fn create_player_df(
     let mut ang_vel_z: Vec<Option<f32>> = vec![None; frame_count];
     let mut throttle: Vec<Option<u8>> = vec![None; frame_count];
     let mut steer: Vec<Option<u8>> = vec![None; frame_count];
-    let mut handbrake: Vec<Option<u8>> = vec![None; frame_count];
+    let mut handbrake: Vec<Option<bool>> = vec![None; frame_count];
 
     // Player data
     let mut match_score: Vec<Option<i32>> = vec![None; frame_count];
@@ -291,7 +292,7 @@ fn create_player_df(
         Float32Chunked::new_from_opt_slice("ang_vel_z", &ang_vel_z).into_series(),
         UInt8Chunked::new_from_opt_slice("throttle", &throttle).into_series(),
         UInt8Chunked::new_from_opt_slice("steer", &steer).into_series(),
-        UInt8Chunked::new_from_opt_slice("handbrake", &handbrake).into_series(),
+        BooleanChunked::new_from_opt_slice("handbrake", &handbrake).into_series(),
         Int32Chunked::new_from_opt_slice("match_score", &match_score).into_series(),
         Int32Chunked::new_from_opt_slice("match_goals", &match_goals).into_series(),
         Int32Chunked::new_from_opt_slice("match_assists", &match_assists).into_series(),
