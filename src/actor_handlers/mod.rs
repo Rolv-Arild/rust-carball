@@ -8,6 +8,10 @@ pub mod game_info;
 pub mod player;
 pub mod team;
 pub mod utils;
+pub mod jump;
+pub mod double_jump;
+pub mod dodge;
+pub mod flip_car;
 
 pub use self::ball::*;
 pub use self::base::*;
@@ -19,3 +23,7 @@ pub use self::game_info::*;
 pub use self::player::*;
 pub use self::team::*;
 pub use self::utils::*;
+pub use self::jump::*;
+pub use self::double_jump::*;
+pub use self::dodge::*;
+pub use self::flip_car::*;

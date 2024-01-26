@@ -1,7 +1,7 @@
 use crate::actor_handlers::{
-    ActorHandler, ActorHandlerFactory, ActorHandlerPriority, DemoData, TeamData,
-    TimeSeriesBallData, TimeSeriesBoostData, TimeSeriesCarData, TimeSeriesGameEventData,
-    TimeSeriesPlayerData, WrappedUniqueId,
+    ActorHandler, ActorHandlerFactory, ActorHandlerPriority, DemoData, TeamData, TimeSeriesBallData, TimeSeriesBoostData,
+     TimeSeriesCarData, TimeSeriesGameEventData, TimeSeriesJumpData, TimeSeriesPlayerData, WrappedUniqueId,
+     TimeSeriesDoubleJumpData, TimeSeriesDodgeData, TimeSeriesFlipCarData,
 };
 use crate::cleaner::{BoostPickupKind, BoostPickupKindCalculationError};
 use crate::replay_properties_to_hash_map;
@@ -37,6 +37,14 @@ pub struct FrameParser {
         RefCell<HashMap<WrappedUniqueId, HashMap<usize, TimeSeriesPlayerData>>>,
     pub players_time_series_boost_data:
         RefCell<HashMap<WrappedUniqueId, HashMap<usize, TimeSeriesBoostData>>>,
+    pub players_time_series_jump_data:
+        RefCell<HashMap<WrappedUniqueId, HashMap<usize, TimeSeriesJumpData>>>,
+    pub players_time_series_flip_car_data:
+        RefCell<HashMap<WrappedUniqueId, HashMap<usize, TimeSeriesFlipCarData>>>,
+    pub players_time_series_double_jump_data:
+        RefCell<HashMap<WrappedUniqueId, HashMap<usize, TimeSeriesDoubleJumpData>>>,
+    pub players_time_series_dodge_data:
+        RefCell<HashMap<WrappedUniqueId, HashMap<usize, TimeSeriesDodgeData>>>,
     pub demos_data: RefCell<Vec<DemoData>>,
 
     pub cleaned_data: Option<CleanedData>,
@@ -81,6 +89,10 @@ impl FrameParser {
                     players_time_series_car_data: RefCell::new(HashMap::new()),
                     players_time_series_player_data: RefCell::new(HashMap::new()),
                     players_time_series_boost_data: RefCell::new(HashMap::new()),
+                    players_time_series_dodge_data: RefCell::new(HashMap::new()),
+                    players_time_series_flip_car_data: RefCell::new(HashMap::new()),
+                    players_time_series_jump_data: RefCell::new(HashMap::new()),
+                    players_time_series_double_jump_data: RefCell::new(HashMap::new()),
                     demos_data: RefCell::new(vec![]),
 
                     cleaned_data: None,

@@ -1,6 +1,6 @@
 use crate::actor_handlers::{
-    TimeSeriesBallData, TimeSeriesBoostData, TimeSeriesCarData, TimeSeriesGameEventData,
-    TimeSeriesPlayerData, WrappedUniqueId,
+    TimeSeriesBallData, TimeSeriesBoostData, TimeSeriesCarData, TimeSeriesGameEventData, TimeSeriesJumpData, TimeSeriesPlayerData, WrappedUniqueId,
+    TimeSeriesDodgeData, TimeSeriesDoubleJumpData, TimeSeriesFlipCarData,
 };
 use crate::cleaner::BoostPickupKind;
 use crate::frame_parser::{FrameParser, TimeSeriesReplayData};
@@ -57,6 +57,11 @@ impl DataFramesOutput {
         let players_time_series_boost_pickup_data =
             &cleaned_data.players_time_series_boost_pickup_data;
 
+        let players_time_series_jump_data = frame_parser.players_time_series_jump_data.borrow();
+        let players_time_series_double_jump_data = frame_parser.players_time_series_double_jump_data.borrow();
+        let players_time_series_flip_car_data = frame_parser.players_time_series_flip_car_data.borrow();
+        let players_time_series_dodge_data = frame_parser.players_time_series_dodge_data.borrow();
+
         // Create player dfs
         let mut player_dfs = HashMap::new();
         for (wrapped_unique_id, player_actor) in players_actor.iter() {
@@ -76,14 +81,35 @@ impl DataFramesOutput {
                             if let Some(time_series_boost_pickup_data) =
                                 players_time_series_boost_pickup_data.get(wrapped_unique_id)
                             {
-                                let player_df = create_player_df(
-                                    time_series_car_data,
-                                    time_series_player_data,
-                                    time_series_boost_data,
-                                    time_series_boost_pickup_data,
-                                    frame_count,
-                                )?;
-                                player_dfs.insert(wrapped_unique_id.clone(), player_df);
+                                if let Some(time_series_jump_data) = 
+                                    players_time_series_jump_data.get(wrapped_unique_id)
+                                {
+                                    if let Some(time_series_double_jump_data) = 
+                                        players_time_series_double_jump_data.get(wrapped_unique_id)
+                                    {
+                                        if let Some(time_series_flip_car_data) = 
+                                            players_time_series_flip_car_data.get(wrapped_unique_id)
+                                        {
+                                            if let Some(time_series_dodge_data) = 
+                                                players_time_series_dodge_data.get(wrapped_unique_id)
+                                                {
+                                                    let player_df = create_player_df(
+                                                        time_series_car_data,
+                                                        time_series_player_data,
+                                                        time_series_boost_data,
+                                                        time_series_boost_pickup_data,
+                                                        time_series_jump_data,
+                                                        time_series_flip_car_data,
+                                                        time_series_double_jump_data,
+                                                        time_series_dodge_data,
+                                                        frame_count,
+                                                    )?;
+                                                    player_dfs.insert(wrapped_unique_id.clone(), player_df);
+                                                }
+                                        
+                                        }
+                                    }
+                                }
                             } else {
                                 error!("Failed to generate output for {} due to missing time-series boost pickup data.", player_name);
                             };
@@ -130,11 +156,16 @@ impl DataFramesOutput {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn create_player_df(
     time_series_car_data: &HashMap<usize, TimeSeriesCarData>,
     time_series_player_data: &HashMap<usize, TimeSeriesPlayerData>,
     time_series_boost_data: &HashMap<usize, TimeSeriesBoostData>,
     time_series_boost_pickup_data: &HashMap<usize, Option<BoostPickupKind>>,
+    time_series_jump_data: &HashMap<usize, TimeSeriesJumpData>,
+    time_series_flip_car_data: &HashMap<usize, TimeSeriesFlipCarData>,
+    time_series_double_jump_data: &HashMap<usize, TimeSeriesDoubleJumpData>,
+    time_series_dodge_data: &HashMap<usize, TimeSeriesDodgeData>,
     frame_count: usize,
 ) -> Result<DataFrame, OutputError> {
     // Car data
@@ -168,6 +199,19 @@ fn create_player_df(
     // Boost data
     let mut boost_is_active: Vec<Option<u8>> = vec![None; frame_count];
     let mut boost_amount: Vec<Option<f32>> = vec![None; frame_count];
+
+    // New active data
+    let mut jump_is_active: Vec<Option<u8>> = vec![None; frame_count];
+    let mut flip_car_is_active: Vec<Option<u8>> = vec![None; frame_count];
+    let mut double_jump_is_active: Vec<Option<u8>> = vec![None; frame_count];
+    let mut double_jump_torque_x: Vec<Option<f32>> = vec![None; frame_count];
+    let mut double_jump_torque_y: Vec<Option<f32>> = vec![None; frame_count];
+    let mut double_jump_torque_z: Vec<Option<f32>> = vec![None; frame_count];
+    let mut dodge_is_active: Vec<Option<u8>> = vec![None; frame_count];
+    let mut dodge_torque_x: Vec<Option<f32>> = vec![None; frame_count];
+    let mut dodge_torque_y: Vec<Option<f32>> = vec![None; frame_count];
+    let mut dodge_torque_z: Vec<Option<f32>> = vec![None; frame_count];
+
 
     // Boost pickup data
     let mut boost_pickup: Vec<Option<u8>> = vec![None; frame_count];
@@ -203,6 +247,24 @@ fn create_player_df(
     for (frame_number, data) in time_series_boost_data.iter() {
         boost_is_active[*frame_number] = data.boost_is_active.map(u8::from);
         boost_amount[*frame_number] = data.boost_amount;
+    }
+    for (frame_number, data) in time_series_jump_data.iter() {
+        jump_is_active[*frame_number] = data.jump_is_active.map(u8::from);
+    }
+    for (frame_number, data) in time_series_flip_car_data.iter() {
+        flip_car_is_active[*frame_number] = data.flip_car_is_active.map(u8::from);
+    }
+    for (frame_number, data) in time_series_double_jump_data.iter() {
+        double_jump_is_active[*frame_number] = data.double_jump_is_active.map(u8::from);
+        double_jump_torque_x[*frame_number] = data.double_jump_torque_x.map(f32::from);
+        double_jump_torque_y[*frame_number] = data.double_jump_torque_y.map(f32::from);
+        double_jump_torque_z[*frame_number] = data.double_jump_torque_z.map(f32::from);
+    }
+    for (frame_number, data) in time_series_dodge_data.iter() {
+        dodge_is_active[*frame_number] = data.dodge_is_active.map(u8::from);
+        dodge_torque_x[*frame_number] = data.dodge_torque_x.map(f32::from);
+        dodge_torque_y[*frame_number] = data.dodge_torque_y.map(f32::from);
+        dodge_torque_z[*frame_number] = data.dodge_torque_z.map(f32::from);
     }
     for (frame_number, _boost_pickup) in time_series_boost_pickup_data.iter() {
         match _boost_pickup {
@@ -240,6 +302,16 @@ fn create_player_df(
         UInt8Chunked::new_from_opt_slice("boost_is_active", &boost_is_active).into_series(),
         Float32Chunked::new_from_opt_slice("boost_amount", &boost_amount).into_series(),
         UInt8Chunked::new_from_opt_slice("boost_pickup", &boost_pickup).into_series(),
+        UInt8Chunked::new_from_opt_slice("jump_is_active", &jump_is_active).into_series(),
+        UInt8Chunked::new_from_opt_slice("double_jump_is_active", &double_jump_is_active).into_series(),
+        UInt8Chunked::new_from_opt_slice("flip_car_is_active", &flip_car_is_active).into_series(),
+        UInt8Chunked::new_from_opt_slice("dodge_is_active", &dodge_is_active).into_series(),
+        Float32Chunked::new_from_opt_slice("double_jump_torque_x", &double_jump_torque_x).into_series(),
+        Float32Chunked::new_from_opt_slice("double_jump_torque_y", &double_jump_torque_y).into_series(),
+        Float32Chunked::new_from_opt_slice("double_jump_torque_z", &double_jump_torque_z).into_series(),
+        Float32Chunked::new_from_opt_slice("dodge_torque_x", &dodge_torque_x).into_series(),
+        Float32Chunked::new_from_opt_slice("dodge_torque_y", &dodge_torque_y).into_series(),
+        Float32Chunked::new_from_opt_slice("dodge_torque_z", &dodge_torque_z).into_series(),
     ])
     .map_err(OutputError::CreateDataFrameError)
 }

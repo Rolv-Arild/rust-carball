@@ -1,6 +1,7 @@
 use crate::actor_handlers::{
     ActorHandler, BallHandler, BlueTeamHandler, BoostHandler, CarHandler, GameEventHandler,
-    GameInfoHandler, OrangeTeamHandler, PlayerHandler,
+    GameInfoHandler, OrangeTeamHandler, PlayerHandler, JumpHandler, DoubleJumpHandler, DodgeHandler,
+    FlipCarHandler
 };
 use crate::frame_parser::FrameParser;
 use std::cell::RefCell;
@@ -50,6 +51,10 @@ impl<'a> ActorHandlerFactory<'a> {
             ActorKind::Player => Some(Box::new(PlayerHandler::new(self.frame_parser))),
             ActorKind::Car => Some(Box::new(CarHandler::new(self.frame_parser))),
             ActorKind::Boost => Some(Box::new(BoostHandler::new(self.frame_parser))),
+            ActorKind::Jump => Some(Box::new(JumpHandler::new(self.frame_parser))),
+            ActorKind::DoubleJump => Some(Box::new(DoubleJumpHandler::new(self.frame_parser))),
+            ActorKind::Dodge => Some(Box::new(DodgeHandler::new(self.frame_parser))),
+            ActorKind::FlipCar => Some(Box::new(FlipCarHandler::new(self.frame_parser))),
             ActorKind::NotHandled => None,
         }
     }
@@ -66,6 +71,10 @@ pub enum ActorKind {
     Car,
     Boost,
     NotHandled,
+    Jump,
+    DoubleJump,
+    Dodge,
+    FlipCar,
 }
 
 impl ActorKind {
@@ -87,7 +96,15 @@ impl ActorKind {
             Self::Car
         } else if object_name == "Archetypes.CarComponents.CarComponent_Boost" {
             Self::Boost
-        } else {
+        } else if object_name == "Archetypes.CarComponents.CarComponent_Jump" {
+            Self::Jump
+        } else if object_name == "Archetypes.CarComponents.CarComponent_DoubleJump" {
+            Self::DoubleJump
+        }  else if object_name == "Archetypes.CarComponents.CarComponent_Dodge" {
+            Self::Dodge
+        }  else if object_name == "Archetypes.CarComponents.CarComponent_FlipCar" {
+            Self::FlipCar
+        }  else {
             Self::NotHandled
         }
     }
