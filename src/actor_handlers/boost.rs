@@ -65,7 +65,12 @@ impl TimeSeriesBoostData {
         {
             boost_is_active = Some(*_boost_is_active_int & 1 != 0); // Boost is active when the integer is odd.
         }
-        if let Some(Attribute::Byte(_boost_amount)) =
+        if let Some(Attribute::ReplicatedBoost(_boost_amount)) =
+            attributes.get("TAGame.CarComponent_Boost_TA:ReplicatedBoost")
+        {
+            boost_amount = Some((*_boost_amount).boost_amount as f32 / 2.55);
+        }
+        else if let Some(Attribute::Byte(_boost_amount)) =
             attributes.get("TAGame.CarComponent_Boost_TA:ReplicatedBoostAmount")
         {
             boost_amount = Some(*_boost_amount as f32 / 2.55);

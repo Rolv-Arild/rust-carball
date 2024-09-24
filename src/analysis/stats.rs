@@ -112,7 +112,7 @@ impl PlayerStats {
 
         let boost_amount = player_df.column("boost_amount")?.f32()?;
         let game_delta = game_df.column("delta")?.f32()?;
-        let total_game_delta = game_delta.sum().unwrap();
+        let total_game_delta = game_delta.sum().unwrap_or(0.0);
 
         let vel_x = player_df.column("vel_x")?.f32()?;
         let vel_y = player_df.column("vel_y")?.f32()?;
@@ -123,26 +123,26 @@ impl PlayerStats {
         let pos_y = player_df.column("pos_y")?.f32()?;
         let pos_z = player_df.column("pos_z")?.f32()?;
 
-        let time_in_blue_half = game_delta.filter(&pos_y.lt(0.0))?.sum().unwrap();
-        let time_in_orange_half = game_delta.filter(&pos_y.gt(0.0))?.sum().unwrap();
+        let time_in_blue_half = game_delta.filter(&pos_y.lt(0.0))?.sum().unwrap_or(0.0);
+        let time_in_orange_half = game_delta.filter(&pos_y.gt(0.0))?.sum().unwrap_or(0.0);
         let time_in_blue_third = game_delta
             .filter(&pos_y.lt(-PITCH_Y_THIRD_THRESHOLD))?
             .sum()
-            .unwrap();
+            .unwrap_or(0.0);
         let time_in_neutral_third = game_delta
             .filter(&pos_y.apply(f32::abs).lt(PITCH_Y_THIRD_THRESHOLD))?
             .sum()
-            .unwrap();
+            .unwrap_or(0.0);
         let time_in_orange_third = game_delta
             .filter(&pos_y.gt(PITCH_Y_THIRD_THRESHOLD))?
             .sum()
-            .unwrap();
+            .unwrap_or(0.0);
 
         let time_in_attacking_half;
         let time_in_defending_half;
         let time_in_attacking_third;
         let time_in_defending_third;
-        match player.is_orange.unwrap() {
+        match player.is_orange.unwrap_or(false) {
             true => {
                 time_in_attacking_half = time_in_blue_half;
                 time_in_defending_half = time_in_orange_half;
@@ -158,26 +158,26 @@ impl PlayerStats {
         }
 
         Ok(Self {
-            big_pads_collected: boost_pickup.eq(2).sum().unwrap(),
-            small_pads_collected: boost_pickup.eq(1).sum().unwrap(),
+            big_pads_collected: boost_pickup.eq(2).sum().unwrap_or(0),
+            small_pads_collected: boost_pickup.eq(1).sum().unwrap_or(0),
             boost_used: game_delta
                 .filter(&player_df.column("boost_is_active")?.u8()?.eq(1))?
                 .sum()
-                .unwrap()
+                .unwrap_or(0.0)
                 * BOOST_PER_SECOND,
-            time_full_boost: game_delta.filter(&boost_amount.gt_eq(95.0))?.sum().unwrap(),
-            time_high_boost: game_delta.filter(&boost_amount.gt_eq(75.0))?.sum().unwrap(),
-            time_low_boost: game_delta.filter(&boost_amount.lt_eq(25.0))?.sum().unwrap(),
-            time_no_boost: game_delta.filter(&boost_amount.lt_eq(5.0))?.sum().unwrap(),
-            average_boost_level: (game_delta * boost_amount).sum().unwrap() / total_game_delta,
+            time_full_boost: game_delta.filter(&boost_amount.gt_eq(95.0))?.sum().unwrap_or(0.0),
+            time_high_boost: game_delta.filter(&boost_amount.gt_eq(75.0))?.sum().unwrap_or(0.0),
+            time_low_boost: game_delta.filter(&boost_amount.lt_eq(25.0))?.sum().unwrap_or(0.0),
+            time_no_boost: game_delta.filter(&boost_amount.lt_eq(5.0))?.sum().unwrap_or(0.0),
+            average_boost_level: (game_delta * boost_amount).sum().unwrap_or(0.0) / total_game_delta,
 
-            average_speed: (game_delta * &speed).sum().unwrap() / total_game_delta,
-            time_at_supersonic: game_delta.filter(&speed.gt(2200.0))?.sum().unwrap(),
-            time_at_boost_speed: game_delta.filter(&speed.gt(1450.0))?.sum().unwrap(),
-            time_at_slow_speed: game_delta.filter(&speed.lt(700.0))?.sum().unwrap(),
+            average_speed: (game_delta * &speed).sum().unwrap_or(0.0) / total_game_delta,
+            time_at_supersonic: game_delta.filter(&speed.gt(2200.0))?.sum().unwrap_or(0.0),
+            time_at_boost_speed: game_delta.filter(&speed.gt(1450.0))?.sum().unwrap_or(0.0),
+            time_at_slow_speed: game_delta.filter(&speed.lt(700.0))?.sum().unwrap_or(0.0),
 
-            time_on_ground: game_delta.filter(&pos_z.lt(20.0))?.sum().unwrap(),
-            time_near_ground: game_delta.filter(&pos_z.lt(150.0))?.sum().unwrap(),
+            time_on_ground: game_delta.filter(&pos_z.lt(20.0))?.sum().unwrap_or(0.0),
+            time_near_ground: game_delta.filter(&pos_z.lt(150.0))?.sum().unwrap_or(0.0),
             time_in_attacking_half,
             time_in_defending_half,
             time_in_attacking_third,
