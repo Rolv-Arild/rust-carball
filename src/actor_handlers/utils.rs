@@ -170,6 +170,13 @@ impl WrappedUniqueId {
             panic!("Could not get UniqueId attribute.")
         }
     }
+    pub fn new_bot(counter: usize) -> Self {
+        Self(UniqueId {
+            system_id: counter as u8,
+            remote_id: RemoteId::QQ(counter as u64),  // QQ is probably used for Chinese Rocket League. Using it here since it's not likely to appear in the data otherwise.
+            local_id: counter as u8,
+        })
+    }
 }
 
 impl Hash for WrappedUniqueId {
