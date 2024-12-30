@@ -229,9 +229,9 @@ dependencies = [
 
 [[package]]
 name = "boxcars"
-version = "0.9.15"
+version = "0.9.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a309304cafdffd15884545e0c5eab68a1fbe9fbc00584c749d70ad1030fc3bb"
+checksum = "516106286f9b3dbe8cd54c031174b337665db392c1ff336fab75fa8b6b5376be"
 dependencies = [
  "bitter",
  "encoding_rs",
