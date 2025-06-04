@@ -1,6 +1,6 @@
 use crate::frame_parser::Actor;
 use boxcars::attributes::{RemoteId, UniqueId};
-use boxcars::Attribute;
+use boxcars::{ActorId, Attribute};
 use log::warn;
 use serde::{Serialize, Serializer};
 use std::collections::{hash_map::DefaultHasher, HashMap};
@@ -158,30 +158,42 @@ fn rotator_to_quat(pitch: f32, yaw: f32, roll: f32) -> (f32, f32, f32, f32) {
 }
 
 #[derive(Debug, Clone)]
-pub struct WrappedUniqueId(UniqueId);
+pub struct WrappedUniqueId {
+    unique_id: UniqueId,
+    actor_id: ActorId
+}
 
 impl WrappedUniqueId {
-    pub fn from(attributes: &HashMap<String, Attribute>) -> Self {
+    pub fn from(attributes: &HashMap<String, Attribute>, actor_id: ActorId) -> Self {
         if let Some(Attribute::UniqueId(unique_id)) =
             attributes.get("Engine.PlayerReplicationInfo:UniqueId")
         {
-            Self(unique_id.as_ref().clone())
+            Self{
+                unique_id: unique_id.as_ref().clone(),
+                actor_id
+            }
         } else {
             panic!("Could not get UniqueId attribute.")
         }
     }
-    pub fn new_bot(counter: usize) -> Self {
-        Self(UniqueId {
-            system_id: counter as u8,
-            remote_id: RemoteId::QQ(counter as u64),  // QQ is probably used for Chinese Rocket League. Using it here since it's not likely to appear in the data otherwise.
-            local_id: counter as u8,
-        })
+
+    pub fn new_bot(actor_id: ActorId) -> Self {
+        Self {
+            unique_id:
+            UniqueId {
+                system_id: 0,
+                // QQ is probably used for Chinese Rocket League. Using it here since it's not likely to appear in the data otherwise.
+                remote_id: RemoteId::QQ(0),
+                local_id: 0,
+            },
+            actor_id
+        }
     }
 }
 
 impl Hash for WrappedUniqueId {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        match &self.0.remote_id {
+        match &self.unique_id.remote_id {
             RemoteId::PlayStation(ps4_id) => {
                 "PlayStation".hash(state);
                 ps4_id.online_id.hash(state);
@@ -216,13 +228,15 @@ impl Hash for WrappedUniqueId {
                 string.hash(state);
             }
         }
+
+        self.actor_id.hash(state);
     }
 }
 
 impl PartialEq for WrappedUniqueId {
     fn eq(&self, other: &WrappedUniqueId) -> bool {
         // TODO: Replace with accurate impl (referencing hash impl).
-        self.0.remote_id == other.0.remote_id
+        (self.unique_id.remote_id == other.unique_id.remote_id) && (self.actor_id == other.actor_id)
     }
 }
 impl Eq for WrappedUniqueId {}

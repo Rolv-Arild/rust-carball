@@ -1,13 +1,12 @@
 use crate::actor_handlers::{ActorHandler, ActorHandlerPriority, WrappedUniqueId};
 use crate::frame_parser::{Actor, FrameParser};
-use boxcars::Attribute;
+use boxcars::{ActorId, Attribute};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct PlayerHandler<'a> {
     frame_parser: &'a FrameParser,
-    wrapped_unique_id: Option<WrappedUniqueId>,
-    bot_counter: usize,  // Counter for bots since they don't have the UniqueId attribute.
+    wrapped_unique_id: Option<WrappedUniqueId>
 }
 
 impl<'a> ActorHandler<'a> for PlayerHandler<'a> {
@@ -15,7 +14,6 @@ impl<'a> ActorHandler<'a> for PlayerHandler<'a> {
         Self {
             frame_parser,
             wrapped_unique_id: None,
-            bot_counter: 0,
         }
     }
 
@@ -27,11 +25,10 @@ impl<'a> ActorHandler<'a> for PlayerHandler<'a> {
             let wrapped_unique_id = if let Some(Attribute::UniqueId(_unique_id)) =
                 attributes.get("Engine.PlayerReplicationInfo:UniqueId")
             {
-                WrappedUniqueId::from(&attributes)
+                WrappedUniqueId::from(&attributes, actor_id)
             } else {
                 // Generate a unique ID for the bot
-                self.bot_counter += 1;
-                WrappedUniqueId::new_bot(self.bot_counter)
+                WrappedUniqueId::new_bot(actor_id)
             };
             self.wrapped_unique_id = Some(wrapped_unique_id.clone());
             let mut players_wrapped_unique_id =
