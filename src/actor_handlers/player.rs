@@ -6,16 +6,14 @@ use std::collections::HashMap;
 #[derive(Debug, Clone)]
 pub struct PlayerHandler<'a> {
     frame_parser: &'a FrameParser,
-    wrapped_unique_id: Option<WrappedUniqueId>,
-    bot_counter: usize,  // Counter for bots since they don't have the UniqueId attribute.
+    wrapped_unique_id: Option<WrappedUniqueId>
 }
 
 impl<'a> ActorHandler<'a> for PlayerHandler<'a> {
     fn new(frame_parser: &'a FrameParser) -> Self {
         Self {
             frame_parser,
-            wrapped_unique_id: None,
-            bot_counter: 0,
+            wrapped_unique_id: None
         }
     }
 
@@ -29,9 +27,8 @@ impl<'a> ActorHandler<'a> for PlayerHandler<'a> {
             {
                 WrappedUniqueId::from(&attributes)
             } else {
-                // Generate a unique ID for the bot
-                self.bot_counter += 1;
-                WrappedUniqueId::new_bot(self.bot_counter)
+                // Generate a unique ID for the bot based on the actor's id
+                WrappedUniqueId::new_bot(actor_id.0 as usize)
             };
             self.wrapped_unique_id = Some(wrapped_unique_id.clone());
             let mut players_wrapped_unique_id =
