@@ -13,7 +13,7 @@ impl<'a> ActorHandler<'a> for PlayerHandler<'a> {
     fn new(frame_parser: &'a FrameParser) -> Self {
         Self {
             frame_parser,
-            wrapped_unique_id: None,
+            wrapped_unique_id: None
         }
     }
 
