@@ -1,6 +1,6 @@
 use crate::actor_handlers::{ActorHandler, ActorHandlerPriority, WrappedUniqueId};
 use crate::frame_parser::{Actor, FrameParser};
-use boxcars::{ActorId, Attribute};
+use boxcars::{Attribute};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
