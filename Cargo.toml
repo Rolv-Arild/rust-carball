@@ -22,10 +22,6 @@ thiserror = "1.0.30"
 structopt = "0.3.22"
 clap = "2.33.3"
 
-[dependencies.pyo3]
-version = "0.14.1"
-features = ["auto-initialize"]
-
 [dev-dependencies]
 criterion = "0.3.4"
 
