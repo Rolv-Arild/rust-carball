@@ -1,3 +1,4 @@
+
 ECHO "Building for Windows..."
 cargo build --release
 

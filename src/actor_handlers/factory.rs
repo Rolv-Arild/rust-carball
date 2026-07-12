@@ -1,7 +1,7 @@
 use crate::actor_handlers::{
     ActorHandler, BallHandler, BlueTeamHandler, BoostHandler, CarHandler, GameEventHandler,
     GameInfoHandler, OrangeTeamHandler, PlayerHandler, JumpHandler, DoubleJumpHandler, DodgeHandler,
-    FlipCarHandler
+    FlipCarHandler, AirActivateHandler
 };
 use crate::frame_parser::FrameParser;
 use std::cell::RefCell;
@@ -55,6 +55,7 @@ impl<'a> ActorHandlerFactory<'a> {
             ActorKind::DoubleJump => Some(Box::new(DoubleJumpHandler::new(self.frame_parser))),
             ActorKind::Dodge => Some(Box::new(DodgeHandler::new(self.frame_parser))),
             ActorKind::FlipCar => Some(Box::new(FlipCarHandler::new(self.frame_parser))),
+            ActorKind::AirActivate => Some(Box::new(AirActivateHandler::new(self.frame_parser))),
             ActorKind::NotHandled => None,
         }
     }
@@ -75,6 +76,7 @@ pub enum ActorKind {
     DoubleJump,
     Dodge,
     FlipCar,
+    AirActivate
 }
 
 impl ActorKind {
@@ -104,7 +106,9 @@ impl ActorKind {
             Self::Dodge
         }  else if object_name == "Archetypes.CarComponents.CarComponent_FlipCar" {
             Self::FlipCar
-        }  else {
+        } else if object_name == "Archetypes.CarComponents.CarComponent_AirActivate" {
+            Self::AirActivate
+        } else {
             Self::NotHandled
         }
     }

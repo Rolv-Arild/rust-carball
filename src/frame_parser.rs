@@ -1,12 +1,12 @@
 use crate::actor_handlers::{
     ActorHandler, ActorHandlerFactory, ActorHandlerPriority, DemoData, TeamData, TimeSeriesBallData, TimeSeriesBoostData,
      TimeSeriesCarData, TimeSeriesGameEventData, TimeSeriesJumpData, TimeSeriesPlayerData, WrappedUniqueId,
-     TimeSeriesDoubleJumpData, TimeSeriesDodgeData, TimeSeriesFlipCarData,
+     TimeSeriesDoubleJumpData, TimeSeriesDodgeData, TimeSeriesFlipCarData, TimeSeriesAirActivateData
 };
 use crate::cleaner::{BoostPickupKind, BoostPickupKindCalculationError};
 use crate::replay_properties_to_hash_map;
 use boxcars::{ActorId, Attribute, HeaderProp, NewActor, Replay, UpdatedAttribute};
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, ProgressDrawTarget};
 use indicatif::ProgressIterator;
 use log::{info, warn};
 use std::cell::RefCell;
@@ -45,6 +45,8 @@ pub struct FrameParser {
         RefCell<HashMap<WrappedUniqueId, HashMap<usize, TimeSeriesDoubleJumpData>>>,
     pub players_time_series_dodge_data:
         RefCell<HashMap<WrappedUniqueId, HashMap<usize, TimeSeriesDodgeData>>>,
+    pub players_time_series_air_activate_data:
+        RefCell<HashMap<WrappedUniqueId, HashMap<usize, TimeSeriesAirActivateData>>>,
     pub demos_data: RefCell<Vec<DemoData>>,
 
     pub cleaned_data: Option<CleanedData>,
@@ -93,6 +95,7 @@ impl FrameParser {
                     players_time_series_flip_car_data: RefCell::new(HashMap::new()),
                     players_time_series_jump_data: RefCell::new(HashMap::new()),
                     players_time_series_double_jump_data: RefCell::new(HashMap::new()),
+                    players_time_series_air_activate_data: RefCell::new(HashMap::new()),
                     demos_data: RefCell::new(vec![]),
 
                     cleaned_data: None,
@@ -126,7 +129,7 @@ impl FrameParser {
 
         let iter: Box<dyn Iterator<Item = (usize, &boxcars::Frame)>> = if show_progress {
             let progress_bar = ProgressBar::new(self.frame_count as u64);
-            progress_bar.set_draw_rate(30);
+            progress_bar.set_draw_target(ProgressDrawTarget::stderr_with_hz(30));
             Box::new(
                 network_frames
                     .frames

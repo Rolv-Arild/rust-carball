@@ -87,6 +87,7 @@ pub struct TimeSeriesCarData {
     pub ang_vel_x: Option<f32>,
     pub ang_vel_y: Option<f32>,
     pub ang_vel_z: Option<f32>,
+    pub dodges_refreshed_counter: Option<u32>,
 }
 
 impl TimeSeriesCarData {
@@ -115,6 +116,13 @@ impl TimeSeriesCarData {
 
         let rigid_body_data = RigidBodyData::from(actor, attributes, replay_version);
 
+        let mut dodges_refreshed_counter = None;
+        if let Some(Attribute::Int(_counter)) =
+            attributes.get("TAGame.Car_TA:DodgesRefreshedCounter")
+        {
+            dodges_refreshed_counter = Some(*_counter as u32);
+        }
+
         TimeSeriesCarData {
             throttle,
             steer,
@@ -133,6 +141,7 @@ impl TimeSeriesCarData {
             ang_vel_x: rigid_body_data.ang_vel_x,
             ang_vel_y: rigid_body_data.ang_vel_y,
             ang_vel_z: rigid_body_data.ang_vel_z,
+            dodges_refreshed_counter,
         }
     }
 }

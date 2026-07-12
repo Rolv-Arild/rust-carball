@@ -12,6 +12,7 @@ pub mod jump;
 pub mod double_jump;
 pub mod dodge;
 pub mod flip_car;
+pub mod air_activate;
 
 pub use self::ball::*;
 pub use self::base::*;
@@ -27,3 +28,4 @@ pub use self::jump::*;
 pub use self::double_jump::*;
 pub use self::dodge::*;
 pub use self::flip_car::*;
+pub use self::air_activate::*;
